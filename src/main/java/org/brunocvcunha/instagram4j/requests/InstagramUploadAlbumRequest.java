@@ -134,7 +134,7 @@ public class InstagramUploadAlbumRequest extends InstagramPostRequest<InstagramC
      * @return Request
      */
     protected HttpPost createHttpRequest() {
-        String url = InstagramConstants.API_URL + getUrl();
+        String url = InstagramConstants.API_URL_PREFIX + getUrl();
         System.out.println("URL Upload: " + url);
 
         HttpPost post = new HttpPost(url);

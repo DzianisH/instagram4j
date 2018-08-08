@@ -30,9 +30,9 @@ public class InstagramConstants {
      */
 
     /**
-     * API URL
+     * prefix for API URL
      */
-    public static final String API_URL = "https://i.instagram.com/api/v1/";
+    public static final String API_URL_PREFIX = "https://i.instagram.com/api/v1/";
 
     /**
      * API Key (extracted from the apk)

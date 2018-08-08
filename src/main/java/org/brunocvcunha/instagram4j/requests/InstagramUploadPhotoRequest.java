@@ -23,6 +23,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
@@ -127,6 +128,11 @@ public class InstagramUploadPhotoRequest extends InstagramRequest<InstagramConfi
         }
     }
 
+    @Override
+    protected HttpRequestBase createRequest() throws IOException {
+        return null;
+    }
+
     /**
      * Creates required multipart entity with the image binary
      * @return HttpEntity to send on the post
@@ -151,7 +157,7 @@ public class InstagramUploadPhotoRequest extends InstagramRequest<InstagramConfi
      * @return Request
      */
     protected HttpPost createHttpRequest() {
-        String url = InstagramConstants.API_URL + getUrl();
+        String url = InstagramConstants.API_URL_PREFIX + getUrl();
         log.info("URL Upload: " + url);
 
         HttpPost post = new HttpPost(url);

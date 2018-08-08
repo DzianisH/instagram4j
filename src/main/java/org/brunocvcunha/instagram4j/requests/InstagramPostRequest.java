@@ -15,13 +15,11 @@
  */
 package org.brunocvcunha.instagram4j.requests;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
 import org.brunocvcunha.instagram4j.InstagramConstants;
 import org.brunocvcunha.instagram4j.util.InstagramHashUtil;
 
@@ -40,35 +38,24 @@ public abstract class InstagramPostRequest<T> extends InstagramRequest<T> {
         return "POST";
     }
     
-    @Override
-    public T execute() throws ClientProtocolException, IOException {
-        HttpPost post = new HttpPost(InstagramConstants.API_URL + getUrl());
+
+    protected HttpRequestBase createRequest() throws UnsupportedEncodingException {
+        HttpPost post = new HttpPost(InstagramConstants.API_URL_PREFIX + getUrl());
         post.addHeader("Connection", "close");
         post.addHeader("Accept", "*/*");
         post.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         post.addHeader("Cookie2", "$Version=1");
         post.addHeader("Accept-Language", "en-US");
         post.addHeader("User-Agent", InstagramConstants.USER_AGENT);
-        
-        log.debug("User-Agent: " + InstagramConstants.USER_AGENT);
+
         String payload = getPayload();
-        log.debug("Base Payload: " + payload);
-        
+
         if (isSigned()) {
             payload = InstagramHashUtil.generateSignature(payload);
         }
-        log.debug("Final Payload: " + payload);
         post.setEntity(new StringEntity(payload));
-        
-        HttpResponse response = api.getClient().execute(post);
-        api.setLastResponse(response);
-        
-        int resultCode = response.getStatusLine().getStatusCode();
-        String content = EntityUtils.toString(response.getEntity());
-        
-        post.releaseConnection();
 
-        return parseResult(resultCode, content);
+        return post;
     }
 
 }

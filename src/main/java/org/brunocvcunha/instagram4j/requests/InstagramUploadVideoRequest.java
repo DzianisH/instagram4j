@@ -26,6 +26,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.brunocvcunha.instagram4j.InstagramConstants;
@@ -116,6 +117,11 @@ public class InstagramUploadVideoRequest extends InstagramRequest<StatusResult> 
 
             
         }
+    }
+
+    @Override
+    protected HttpRequestBase createRequest() {
+        return null;
     }
 
     /**

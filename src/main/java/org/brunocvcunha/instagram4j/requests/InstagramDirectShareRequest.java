@@ -15,25 +15,22 @@
  */
 package org.brunocvcunha.instagram4j.requests;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.extern.log4j.Log4j;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ByteArrayEntity;
+import org.brunocvcunha.instagram4j.InstagramConstants;
+import org.brunocvcunha.instagram4j.requests.payload.StatusResult;
+import org.brunocvcunha.instagram4j.util.InstagramGenericUtil;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.util.EntityUtils;
-import org.brunocvcunha.instagram4j.InstagramConstants;
-import org.brunocvcunha.instagram4j.requests.payload.StatusResult;
-import org.brunocvcunha.instagram4j.util.InstagramGenericUtil;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.extern.log4j.Log4j;
 
 /**
  * Direct-share request.
@@ -79,11 +76,11 @@ public class InstagramDirectShareRequest extends InstagramRequest<StatusResult> 
 	}
 
 	@Override
-	public StatusResult execute() throws ClientProtocolException, IOException {
+	protected HttpRequestBase createRequest() throws IOException {
 		String recipients = "\"" + String.join("\",\"", this.recipients.toArray(new String[0])) + "\"";
-		List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> data = new ArrayList<>();
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		if (shareType == ShareType.MEDIA) {
 			map.put("type", "form-data");
 			map.put("name", "media_id");
@@ -91,25 +88,25 @@ public class InstagramDirectShareRequest extends InstagramRequest<StatusResult> 
 			data.add(map);
 		}
 
-		map = map.size() > 0 ? new HashMap<String, String>() : map;
+		map = map.size() > 0 ? new HashMap<>() : map;
 		map.put("type", "form-data");
 		map.put("name", "recipient_users");
 		map.put("data", "[[" + recipients + "]]");
 		data.add(map);
 
-		map = new HashMap<String, String>();
+		map = new HashMap<>();
 		map.put("type", "form-data");
 		map.put("name", "client_context");
 		map.put("data", InstagramGenericUtil.generateUuid(true));
 		data.add(map);
 
-		map = new HashMap<String, String>();
+		map = new HashMap<>();
 		map.put("type", "form-data");
 		map.put("name", "thread_ids");
 		map.put("data", "[]");
 		data.add(map);
 
-		map = new HashMap<String, String>();
+		map = new HashMap<>();
 		map.put("type", "form-data");
 		map.put("name", "text");
 		map.put("data", message == null ? "" : message);
@@ -118,20 +115,7 @@ public class InstagramDirectShareRequest extends InstagramRequest<StatusResult> 
 		HttpPost post = createHttpRequest();
 		post.setEntity(new ByteArrayEntity(buildBody(data, api.getUuid()).getBytes(StandardCharsets.UTF_8)));
 
-		try (CloseableHttpResponse response = api.getClient().execute(post)) {
-			api.setLastResponse(response);
-
-			int resultCode = response.getStatusLine().getStatusCode();
-			String content = EntityUtils.toString(response.getEntity());
-
-			log.info("Direct-share request result: " + resultCode + ", " + content);
-
-			post.releaseConnection();
-
-			StatusResult result = parseResult(resultCode, content);
-
-			return result;
-		}
+		return post;
 	}
 
 	@Override
@@ -140,7 +124,7 @@ public class InstagramDirectShareRequest extends InstagramRequest<StatusResult> 
 	}
 
 	protected HttpPost createHttpRequest() {
-		String url = InstagramConstants.API_URL + getUrl();
+		String url = InstagramConstants.API_URL_PREFIX + getUrl();
 		log.info("Direct-share URL: " + url);
 
 		HttpPost post = new HttpPost(url);
@@ -162,10 +146,8 @@ public class InstagramDirectShareRequest extends InstagramRequest<StatusResult> 
 					.append(b.get("data")).append(newLine);
 		}
 		sb.append("--").append(boundary).append("--");
-		String body = sb.toString();
 
-		log.debug("Direct-share message body: " + body);
-		return body;
+        return sb.toString();
 	}
 
 	protected void init() {

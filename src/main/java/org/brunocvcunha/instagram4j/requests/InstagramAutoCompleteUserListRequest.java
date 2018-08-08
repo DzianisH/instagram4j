@@ -33,11 +33,6 @@ public class InstagramAutoCompleteUserListRequest extends InstagramGetRequest<St
     }
 
     @Override
-    public String getPayload() {
-        return null;
-    }
-
-    @Override
     @SneakyThrows
     public StatusResult parseResult(int statusCode, String content) {
         return parseJson(statusCode, content, StatusResult.class);

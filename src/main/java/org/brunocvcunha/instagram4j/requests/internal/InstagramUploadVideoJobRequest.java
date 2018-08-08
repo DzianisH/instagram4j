@@ -15,11 +15,8 @@
  */
 package org.brunocvcunha.instagram4j.requests.internal;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,8 +27,10 @@ import org.brunocvcunha.instagram4j.requests.InstagramRequest;
 import org.brunocvcunha.instagram4j.requests.payload.StatusResult;
 import org.brunocvcunha.inutils4j.MyStreamUtils;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Upload photo job request
@@ -80,53 +79,62 @@ public class InstagramUploadVideoJobRequest extends InstagramRequest<StatusResul
         
         log.info("User-Agent: " + InstagramConstants.USER_AGENT);
 
-        try (FileInputStream is = new FileInputStream(videoFile)) {
-            byte[] videoData = MyStreamUtils.readContentBytes(is);
-            
-            //TODO: long ranges? need to handle?
-            int requestSize = (int) Math.floor(videoData.length / 4.0);
-            int lastRequestExtra = (int) (videoData.length - (requestSize * 3));
-            
-            
-            for (int i = 0; i < 4; i++) {
-                
-                int start = i * requestSize;
-                int end;
-                if (i == 3) {
-                    end = i * requestSize + lastRequestExtra;
-                } else {
-                    end = (i + 1) * requestSize;
-                }
-                
-                int actualLength = (i == 3 ? lastRequestExtra : requestSize);
-                
-                String contentRange = String.format("bytes %s-%s/%s", start, end - 1, videoData.length);
-                //post.setHeader("Content-Length", String.valueOf(end - start));
-                post.setHeader("Content-Range", contentRange);
-                
-                byte[] range = Arrays.copyOfRange(videoData, start, start + actualLength);
-                log.info("Total is " + videoData.length + ", sending " + actualLength + " (starting from " + start + ") -- " + range.length + " bytes.");
-                
-                post.setEntity(EntityBuilder.create().setBinary(range).build());
-    
-                try (CloseableHttpResponse response = api.getClient().execute(post)) {
-                    int resultCode = response.getStatusLine().getStatusCode();
-                    String content = EntityUtils.toString(response.getEntity());
-                    log.info("Result of part " + i + ": " + content);
-                    
-                    post.releaseConnection();
-                    response.close();
-                    
-                    if (resultCode != 200 && resultCode != 201) {
-                        throw new IllegalStateException("Failed uploading video (" + resultCode + "): " + content);
-                    }
-                    
-                }
-                
+        byte[] videoData = readFile();
+
+        //TODO: long ranges? need to handle?
+        int requestSize = (int) Math.floor(videoData.length / 4.0);
+        int lastRequestExtra = videoData.length - (requestSize * 3);
+
+
+        for (int i = 0; i < 4; i++) {
+
+            int start = i * requestSize;
+            int end;
+            if (i == 3) {
+                end = i * requestSize + lastRequestExtra;
+            } else {
+                end = (i + 1) * requestSize;
             }
-            
-            return new StatusResult("ok");
+
+            int actualLength = (i == 3 ? lastRequestExtra : requestSize);
+
+            String contentRange = String.format("bytes %s-%s/%s", start, end - 1, videoData.length);
+            //post.setHeader("Content-Length", String.valueOf(end - start));
+            post.setHeader("Content-Range", contentRange);
+
+            byte[] range = Arrays.copyOfRange(videoData, start, start + actualLength);
+            log.info("Total is " + videoData.length + ", sending " + actualLength + " (starting from " + start + ") -- " + range.length + " bytes.");
+
+            post.setEntity(EntityBuilder.create().setBinary(range).build());
+
+            try (CloseableHttpResponse response = api.getClient().execute(post)) {
+                int resultCode = response.getStatusLine().getStatusCode();
+                String content = EntityUtils.toString(response.getEntity());
+                log.info("Result of part " + i + ": " + content);
+
+                post.releaseConnection();
+                response.close();
+
+                if (resultCode != 200 && resultCode != 201) {
+                    throw new IllegalStateException("Failed uploading video (" + resultCode + "): " + content);
+                }
+
+            }
+
         }
+
+        return new StatusResult("ok");
+    }
+
+    private byte[] readFile() throws IOException {
+        try (FileInputStream is = new FileInputStream(videoFile)) {
+            return MyStreamUtils.readContentBytes(is);
+        }
+    }
+
+    @Override
+    protected HttpPost createRequest() throws IOException {
+        return null;
     }
 
     @Override

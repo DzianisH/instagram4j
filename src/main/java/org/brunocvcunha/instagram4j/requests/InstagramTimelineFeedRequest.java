@@ -48,11 +48,6 @@ public class InstagramTimelineFeedRequest extends InstagramGetRequest<InstagramF
     }
 
     @Override
-    public String getPayload() {
-        return null;
-    }
-
-    @Override
     public InstagramFeedResult parseResult(int statusCode, String content) {
         try {
             return this.parseJson(statusCode, content, InstagramFeedResult.class);

@@ -18,22 +18,19 @@ package org.brunocvcunha.instagram4j.requests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import lombok.*;
+import lombok.extern.log4j.Log4j;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.util.EntityUtils;
 import org.brunocvcunha.instagram4j.Instagram4j;
 import org.brunocvcunha.instagram4j.requests.payload.StatusResult;
 import org.brunocvcunha.inutils4j.MyStreamUtils;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.extern.log4j.Log4j;
+import java.io.IOException;
+import java.io.InputStream;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -60,14 +57,32 @@ public abstract class InstagramRequest<T> {
     public String getPayload() {
         return null;
     }
-    
+
     /**
      * @return the result
-     * @throws IOException 
-     * @throws ClientProtocolException 
+     * @throws IOException
+     * @throws ClientProtocolException
      */
-    public abstract T execute() throws ClientProtocolException, IOException;
-    
+    public T execute() throws ClientProtocolException, IOException {
+        HttpRequestBase request = createRequest();
+        int statusCode;
+        String content;
+
+        try (CloseableHttpResponse response = api.getClient().execute(request)) {
+            api.setLastResponse(response);
+            statusCode = response.getStatusLine().getStatusCode();
+            content = EntityUtils.toString(response.getEntity());
+        } finally {
+            if (request != null) {
+                request.releaseConnection();
+            }
+        }
+
+        return parseResult(statusCode, content);
+    }
+
+    protected abstract HttpRequestBase createRequest() throws IOException;
+
     /**
      * Process response
      * @param resultCode Status Code

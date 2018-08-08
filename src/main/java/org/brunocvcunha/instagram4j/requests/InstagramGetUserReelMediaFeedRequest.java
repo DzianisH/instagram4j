@@ -31,11 +31,6 @@ public class InstagramGetUserReelMediaFeedRequest extends InstagramGetRequest<In
     private long userId;
 
     @Override
-    public String getPayload() {
-        return null;
-    }
-
-    @Override
     public String getUrl() {
         return "feed/user/" + userId + "/reel_media/?";
     }

@@ -15,13 +15,10 @@
  */
 package org.brunocvcunha.instagram4j.requests;
 
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.brunocvcunha.instagram4j.InstagramConstants;
+
+import java.io.IOException;
 
 /**
  * 
@@ -36,30 +33,16 @@ public abstract class InstagramGetRequest<T> extends InstagramRequest<T> {
     }
     
     @Override
-    public T execute() throws ClientProtocolException, IOException {
-        HttpGet get = new HttpGet(InstagramConstants.API_URL + getUrl());
+    protected HttpGet createRequest() throws IOException {
+        HttpGet get = new HttpGet(InstagramConstants.API_URL_PREFIX + getUrl());
+
         get.addHeader("Connection", "close");
         get.addHeader("Accept", "*/*");
         get.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         get.addHeader("Cookie2", "$Version=1");
         get.addHeader("Accept-Language", "en-US");
         get.addHeader("User-Agent", InstagramConstants.USER_AGENT);
-        
-        HttpResponse response = api.getClient().execute(get);
-        api.setLastResponse(response);
-        
-        int resultCode = response.getStatusLine().getStatusCode();
-        String content = EntityUtils.toString(response.getEntity());
-        
-        get.releaseConnection();
 
-        return parseResult(resultCode, content);
+        return get;
     }
-    
-    @Override
-    public String getPayload() {
-        return null;
-    }
-
-    
 }

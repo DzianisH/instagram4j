@@ -27,11 +27,6 @@ import lombok.SneakyThrows;
  */
 public class InstagramGetReelsTrayFeedRequest extends InstagramGetRequest<InstagramGetReelsTrayFeedResult>{
     @Override
-    public String getPayload() {
-        return null;
-    }
-
-    @Override
     public String getUrl() {
         return "feed/reels_tray/?";
     }
