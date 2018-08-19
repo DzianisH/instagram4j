@@ -194,7 +194,7 @@ public class InstagramUploadVideoRequest extends InstagramRequest<StatusResult> 
      * @return http request 
      */
     protected HttpPost createHttpRequest() {
-        String url = InstagramConstants.API_URL + getUrl();
+        String url = InstagramConstants.API_URL_PREFIX + getUrl();
         log.info("URL Upload: " + url);
         
         HttpPost post = new HttpPost(url);

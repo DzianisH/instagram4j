@@ -43,6 +43,11 @@ import javax.imageio.ImageIO;
  *
  */
 @Log4j
+/*
+    1. This class will be facade, that call 2 sendings
+    2. Move 1st sending to first class
+    2. Move 2nd sending to second class
+ */
 public class InstagramUploadPhotoRequest extends InstagramRequest<InstagramConfigurePhotoResult> {
 
     private BufferedImage imageFile;
